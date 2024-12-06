@@ -1,8 +1,22 @@
-import { clerkMiddleware } from '@clerk/nextjs/server';
+import { NextRequest } from 'next/server';
+import { getAuth } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
-export default clerkMiddleware({
-  publicRoutes: ['/' , 'register']
-});
+export default function middleware(req: NextRequest) {
+  const { userId } = getAuth(req);
+  const publicRoutes = ["/", "/register" ,"/profile"];
+  const url = req.nextUrl.pathname;
+
+  if (publicRoutes.includes(url)) {
+    return NextResponse.next();
+  }
+
+  if (!userId) {
+    return NextResponse.redirect(new URL("/sign-in", req.url));
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
